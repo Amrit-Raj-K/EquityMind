@@ -1,0 +1,32 @@
+name: Daily Stock Scraper
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Run every 6 hours
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Backend
+        run: npm run build
+
+      - name: Run Scraper
+        run: npm run fetch-universe
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}

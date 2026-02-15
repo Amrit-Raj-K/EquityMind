@@ -1,0 +1,43 @@
+
+# Dependencies
+node_modules/
+
+# Build Output
+dist/
+build/
+*.js.map
+*.d.ts.map
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+scraper_debug.log
+
+# Environment Variables
+.env
+.env.*
+!.env.example
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary Files
+tmp/
+temp/
+coverage/
+cleanup_temp_files.bat
+test_*.js
+*.orig
+
+# Angular Cache
+.angular/
