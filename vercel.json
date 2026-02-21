@@ -1,4 +1,5 @@
 {
+    "installCommand": "npm install",
     "buildCommand": "npm run build --workspace=frontend --if-present",
     "outputDirectory": "frontend/dist/frontend/browser",
     "rewrites": [
