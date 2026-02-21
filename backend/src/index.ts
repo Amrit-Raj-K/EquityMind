@@ -47,6 +47,15 @@ app.get('/', (req, res) => {
     res.send('EquityMind Backend is running (Partitioned DB)');
 });
 
+// Diagnostic: Check Env Keys (Safe - no values)
+app.get('/api/debug/env', (req, res) => {
+    res.json({
+        env_keys: Object.keys(process.env),
+        is_vercel: !!process.env.VERCEL,
+        node_env: process.env.NODE_ENV
+    });
+});
+
 // Get all stocks (Screener/Universe)
 // Supports: ?q=search&exchange=NSE|BSE
 app.get('/api/stocks', async (req, res) => {
