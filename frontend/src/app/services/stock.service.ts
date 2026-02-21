@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, Subject } from 'rxjs';
 
@@ -38,7 +38,8 @@ export interface Stock {
     providedIn: 'root'
 })
 export class StockService {
-    private apiUrl = 'http://localhost:3000/api';
+    // Use relative path for production (Vercel routes everything under the same domain)
+    private apiUrl = isDevMode() ? 'http://localhost:3000/api' : '/api';
 
     /** Emits when backend data has been refreshed (scraper finished) */
     dataUpdated$ = new Subject<void>();
