@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
 import { StockRecord } from '../types.js';
 import { StockModel } from './schema.js';
-import dotenv from 'dotenv';
 import path from 'path';
-
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 export class MongoDatabase {
     private isConnected = false;

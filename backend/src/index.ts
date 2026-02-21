@@ -5,10 +5,6 @@ import path from 'path';
 // import { FileDatabase } from './database/fileDb.js';
 import { MongoDatabase } from './database/mongoDb.js'; // [NEW]
 import { YahooService } from './services/yahoo.js';
-import dotenv from 'dotenv'; // [NEW]
-
-dotenv.config();
-
 const app = express();
 const port = 3000;
 
@@ -48,11 +44,13 @@ app.get('/', (req, res) => {
 });
 
 // Diagnostic: Check Env Keys (Safe - no values)
-app.get('/api/debug/env', (req, res) => {
+app.get('/api/env-check', (req, res) => {
     res.json({
-        env_keys: Object.keys(process.env),
+        has_uri: !!process.env.MONGODB_URI,
+        uri_length: process.env.MONGODB_URI?.length || 0,
+        env_keys: Object.keys(process.env).filter(k => !k.includes('SECRET') && !k.includes('KEY') && !k.includes('TOKEN')),
         is_vercel: !!process.env.VERCEL,
-        node_env: process.env.NODE_ENV
+        cwd: process.cwd()
     });
 });
 
