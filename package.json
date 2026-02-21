@@ -1,0 +1,8 @@
+{
+    "name": "equitymind-root",
+    "private": true,
+    "workspaces": [
+        "frontend",
+        "backend"
+    ]
+}

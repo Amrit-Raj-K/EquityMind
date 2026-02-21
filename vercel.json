@@ -1,22 +1,10 @@
 {
-    "version": 2,
-    "builds": [
-        {
-            "src": "frontend/package.json",
-            "use": "@vercel/static-build",
-            "config": {
-                "distDir": "dist/frontend/browser"
-            }
-        },
-        {
-            "src": "backend/src/index.ts",
-            "use": "@vercel/node"
-        }
-    ],
+    "buildCommand": "npm run build --workspace=frontend --if-present",
+    "outputDirectory": "frontend/dist/frontend/browser",
     "rewrites": [
         {
             "source": "/api/(.*)",
-            "destination": "/backend/src/index.ts"
+            "destination": "/api/index.ts"
         },
         {
             "source": "/(.*)",
