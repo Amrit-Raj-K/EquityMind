@@ -24,17 +24,21 @@ db.connect();
 
 const PROGRESS_FILE = path.resolve(process.cwd(), 'data/progress.json');
 
-// Reset progress on startup if it was stuck
-try {
-    if (fs.existsSync(PROGRESS_FILE)) {
-        const p = JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf-8'));
-        if (p.status === 'running' || p.status === 'starting') {
-            console.log("Found stale progress. Resetting to interrupted.");
-            p.status = 'interrupted';
-            fs.writeFileSync(PROGRESS_FILE, JSON.stringify(p));
+// Reset progress on startup if it was stuck (Skip on Vercel read-only FS)
+const isVercel = process.env.VERCEL === '1';
+
+if (!isVercel) {
+    try {
+        if (fs.existsSync(PROGRESS_FILE)) {
+            const p = JSON.parse(fs.readFileSync(PROGRESS_FILE, 'utf-8'));
+            if (p.status === 'running' || p.status === 'starting') {
+                console.log("Found stale progress. Resetting to interrupted.");
+                p.status = 'interrupted';
+                fs.writeFileSync(PROGRESS_FILE, JSON.stringify(p));
+            }
         }
-    }
-} catch (e) { }
+    } catch (e) { }
+}
 
 // Health Check
 app.get('/', (req, res) => {
@@ -131,8 +135,11 @@ import { spawn, ChildProcess } from 'child_process';
 let scraperProcess: ChildProcess | null = null;
 
 app.post('/api/admin/force-update', (req, res) => {
-    console.log("Admin triggered Force Update...");
+    if (isVercel) {
+        return res.status(400).json({ error: "Scraper cannot be run directly on Vercel serverless environment. Use local runner." });
+    }
 
+    console.log("Admin triggered Force Update...");
     // 1. Kill existing process if running
     if (scraperProcess) {
         try {
@@ -183,6 +190,9 @@ app.post('/api/admin/force-update', (req, res) => {
 
 // Admin: Stop Update
 app.post('/api/admin/stop-update', (req, res) => {
+    if (isVercel) {
+        return res.status(400).json({ error: "Operation not supported on Vercel." });
+    }
     console.log("Admin requested Stop Update...");
     try {
         let progress: any = { status: 'running' };
