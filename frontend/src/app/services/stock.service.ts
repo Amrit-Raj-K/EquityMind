@@ -70,14 +70,14 @@ export class StockService {
     }
 
     forceUpdate(): Observable<any> {
-        return this.http.post(`${this.apiUrl}/admin/force-update`, {});
+        return this.http.post<any>(`${this.apiUrl}/admin/force-update`, {});
     }
 
     getUpdateStatus(): Observable<any> {
-        return this.http.get(`${this.apiUrl}/admin/update-status`);
+        return this.http.get<any>(`${this.apiUrl}/admin/update-status`);
     }
 
     stopUpdate(): Observable<any> {
-        return this.http.post(`${this.apiUrl}/admin/stop-update`, {});
+        return this.http.post<any>(`${this.apiUrl}/admin/stop-update`, {});
     }
 }
