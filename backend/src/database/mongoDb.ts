@@ -16,17 +16,18 @@ export class MongoDatabase {
 
         const uri = process.env.MONGODB_URI;
         if (!uri) {
-            console.error("FATAL: MONGODB_URI is not defined in .env");
-            // Fallback for local dev if needed, or just error
-            return;
+            throw new Error("MONGODB_URI is not defined. Please check your Vercel Environment Variables.");
         }
 
         try {
+            // Masked log for debugging without exposing secrets
+            console.log(`Attempting to connect to MongoDB with URI: ${uri.substring(0, 20)}...`);
             await mongoose.connect(uri);
             this.isConnected = true;
             console.log("Connected to MongoDB Atlas");
         } catch (e) {
             console.error("MongoDB Connection Error:", e);
+            throw e;
         }
     }
 

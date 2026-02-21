@@ -21,11 +21,7 @@ const yahoo = new YahooService();
 
 // Connect to DB lazily inside handlers or via middleware
 const ensureConnected = async () => {
-    try {
-        await db.connect();
-    } catch (e) {
-        console.error("Connection helper error:", e);
-    }
+    await db.connect();
 };
 
 const PROGRESS_FILE = path.resolve(process.cwd(), 'data/progress.json');
