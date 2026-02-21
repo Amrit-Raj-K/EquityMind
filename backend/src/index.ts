@@ -19,8 +19,14 @@ app.use(express.json());
 const db = new MongoDatabase(); // [NEW]
 const yahoo = new YahooService();
 
-// Connect to DB immediately
-db.connect();
+// Connect to DB lazily inside handlers or via middleware
+const ensureConnected = async () => {
+    try {
+        await db.connect();
+    } catch (e) {
+        console.error("Connection helper error:", e);
+    }
+};
 
 const PROGRESS_FILE = path.resolve(process.cwd(), 'data/progress.json');
 
@@ -48,54 +54,65 @@ app.get('/', (req, res) => {
 // Get all stocks (Screener/Universe)
 // Supports: ?q=search&exchange=NSE|BSE
 app.get('/api/stocks', async (req, res) => {
-    const q = (req.query.q as string || '').toLowerCase();
-    const exchange = (req.query.exchange as string || '').toUpperCase();
+    try {
+        await ensureConnected();
+        const q = (req.query.q as string || '').toLowerCase();
+        const exchange = (req.query.exchange as string || '').toUpperCase();
 
-    let stocks = await db.getAllStocks();
+        let stocks = await db.getAllStocks();
 
-    // Filter by exchange if specified
-    if (exchange === 'NSE' || exchange === 'BSE') {
-        stocks = stocks.filter((s: any) => s.exchange === exchange);
+        // Filter by exchange if specified
+        if (exchange === 'NSE' || exchange === 'BSE') {
+            stocks = stocks.filter((s: any) => s.exchange === exchange);
+        }
+
+        // Filter by search query
+        if (q) {
+            stocks = stocks.filter((s: any) =>
+                s.symbol.toLowerCase().includes(q) ||
+                s.name.toLowerCase().includes(q)
+            );
+        }
+
+        res.json(stocks);
+    } catch (e) {
+        console.error("API Stocks Error:", e);
+        res.status(500).json({ error: (e as Error).message, stack: isVercel ? undefined : (e as Error).stack });
     }
-
-    // Filter by search query
-    if (q) {
-        stocks = stocks.filter((s: any) =>
-            s.symbol.toLowerCase().includes(q) ||
-            s.name.toLowerCase().includes(q)
-        );
-    }
-
-    res.json(stocks);
 });
 
 // Search Live (Yahoo)
 app.get('/api/search', async (req, res) => {
-    const q = req.query.q as string;
-    if (!q || q.length < 2) return res.json([]);
     try {
+        await ensureConnected();
+        const q = req.query.q as string;
+        if (!q || q.length < 2) return res.json([]);
         const results = await yahoo.searchLive(q);
         res.json(results);
     } catch (e) {
+        console.error("API Search Error:", e);
         res.status(500).json({ error: (e as Error).message });
     }
 });
 
 // Get Stock Details
 app.get('/api/stocks/:symbol', async (req, res) => {
-    const { symbol } = req.params;
     try {
+        await ensureConnected();
+        const { symbol } = req.params;
         const quote = await yahoo.getQuote(symbol);
         res.json(quote);
     } catch (e) {
+        console.error("API Stock Details Error:", e);
         res.status(404).json({ error: "Stock not found" });
     }
 });
 
 // Get Stock Financials
 app.get('/api/stocks/:symbol/financials', async (req, res) => {
-    const { symbol } = req.params;
     try {
+        await ensureConnected();
+        const { symbol } = req.params;
         const [quarterly, annual, balanceSheet] = await Promise.all([
             yahoo.getQuarterlyResults(symbol),
             yahoo.getAnnualFinancials(symbol),
@@ -103,18 +120,21 @@ app.get('/api/stocks/:symbol/financials', async (req, res) => {
         ]);
         res.json({ quarterly, annual, balanceSheet });
     } catch (e) {
+        console.error("API Financials Error:", e);
         res.status(500).json({ error: (e as Error).message });
     }
 });
 
 // Get Historical Data
 app.get('/api/stocks/:symbol/history', async (req, res) => {
-    const { symbol } = req.params;
-    const range = (req.query.range as string) || '1y';
     try {
+        await ensureConnected();
+        const { symbol } = req.params;
+        const range = (req.query.range as string) || '1y';
         const history = await yahoo.getHistoricalPrices(symbol, range);
         res.json(history);
     } catch (e) {
+        console.error("API History Error:", e);
         res.status(500).json({ error: (e as Error).message });
     }
 });

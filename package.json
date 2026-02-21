@@ -2,6 +2,7 @@
     "name": "equitymind-workspace",
     "version": "1.0.0",
     "private": true,
+    "type": "module",
     "dependencies": {
         "cors": "^2.8.5",
         "dotenv": "^17.3.1",
