@@ -48,9 +48,12 @@ app.get('/api/env-check', (req, res) => {
     res.json({
         has_uri: !!process.env.MONGODB_URI,
         uri_length: process.env.MONGODB_URI?.length || 0,
+        project_name: process.env.VERCEL_PROJECT_NAME,
+        env: process.env.VERCEL_ENV,
         env_keys: Object.keys(process.env).filter(k => !k.includes('SECRET') && !k.includes('KEY') && !k.includes('TOKEN')),
         is_vercel: !!process.env.VERCEL,
-        cwd: process.cwd()
+        cwd: process.cwd(),
+        deployment_id: process.env.VERCEL_DEPLOYMENT_ID
     });
 });
 
