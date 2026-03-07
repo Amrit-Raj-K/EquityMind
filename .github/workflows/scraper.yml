@@ -2,7 +2,7 @@ name: Daily Stock Scraper
 
 on:
   schedule:
-    - cron: '0 */6 * * *' # Run every 6 hours
+    - cron: '0 */6 * * 1-5' # Run every 6 hours, Mon-Fri only (skip weekends)
   workflow_dispatch: # Allow manual trigger
 
 jobs:
