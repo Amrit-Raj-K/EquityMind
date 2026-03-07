@@ -161,9 +161,39 @@ app.get('/api/admin/update-status', (req, res) => {
 import { spawn, ChildProcess } from 'child_process';
 let scraperProcess: ChildProcess | null = null;
 
-app.post('/api/admin/force-update', (req, res) => {
+app.post('/api/admin/force-update', async (req, res) => {
     if (isVercel) {
-        return res.status(400).json({ error: "Scraper cannot be run directly on Vercel serverless environment. Use local runner." });
+        // Trigger GitHub Action using Personal Access Token
+        const token = process.env.GITHUB_TOKEN;
+        if (!token) {
+            return res.status(500).json({ error: "GITHUB_TOKEN is not configured in Vercel. Please add a GitHub PAT to trigger updates." });
+        }
+
+        try {
+            const response = await fetch('https://api.github.com/repos/Amrit-Raj-K/EquityMind/actions/workflows/scraper.yml/dispatches', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ref: 'main'
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("GitHub API Error:", response.status, errorText);
+                return res.status(500).json({ error: `Failed to trigger GitHub Action: ${response.statusText}` });
+            }
+
+            console.log("Successfully triggered GitHub Action.");
+            return res.json({ message: "Job triggered successfully on GitHub Actions." });
+        } catch (error) {
+            console.error("Error triggering GitHub Action:", error);
+            return res.status(500).json({ error: "Internal error while triggering GitHub Action." });
+        }
     }
 
     console.log("Admin triggered Force Update...");
