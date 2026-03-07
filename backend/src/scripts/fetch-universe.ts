@@ -1,11 +1,12 @@
+import 'dotenv/config'; // Load env variables
 import fs from 'fs';
 import path from 'path';
 import { GoogleService } from '../services/google.js';
 import { YahooService } from '../services/yahoo.js';
-import { FileDatabase } from '../database/fileDb.js';
+import { MongoDatabase } from '../database/mongoDb.js';
 import { StockRecord } from '../types.js';
 
-const db = new FileDatabase();
+const db = new MongoDatabase();
 const google = new GoogleService();
 const yahoo = new YahooService();
 
@@ -86,6 +87,7 @@ function logToFile(msg: string) {
 async function startScrapingLoop() {
     logToFile("Scraper process started.");
     console.log(`Starting Scheduler...`);
+    await db.connect(); // Ensure we connect to DB
     await new Promise(r => setTimeout(r, 1000));
 
     while (true) {
@@ -216,8 +218,15 @@ async function startScrapingLoop() {
             console.log(`Scheduler sleeping...`);
         }
 
+        if (process.env.GITHUB_ACTIONS === 'true' || process.argv.includes('--once')) {
+            console.log("GitHub Actions or --once flag detected. Exiting loop cleanly.");
+            break;
+        }
+
         await new Promise(r => setTimeout(r, BATCH_GAP_MS));
     }
+
+    process.exit(0);
 }
 
 startScrapingLoop().catch(console.error);

@@ -1,3 +1,4 @@
+import 'dotenv/config'; // Load .env variables FIRST
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -233,8 +234,8 @@ app.post('/api/admin/stop-update', (req, res) => {
     }
 });
 
-// Only listen if not running in Vercel (or similar serverless env)
-if (process.env.NODE_ENV !== 'production') {
+// Only skip listen on Vercel serverless (read-only, no persistent process)
+if (!isVercel) {
     app.listen(port, () => {
         console.log(`Backend listening at http://localhost:${port}`);
     });
