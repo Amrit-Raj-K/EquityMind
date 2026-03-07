@@ -41,8 +41,8 @@ function shouldStop(): boolean {
 }
 
 function shouldRun(): boolean {
-    if (process.argv.includes('--force')) {
-        console.log("Force run detected. Ignoring schedule.");
+    if (process.argv.includes('--force') || process.env.GITHUB_EVENT_NAME === 'workflow_dispatch') {
+        console.log("Force run detected (either --force arg or manual GitHub execution). Ignoring schedule.");
         return true;
     }
 
